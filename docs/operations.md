@@ -1,16 +1,18 @@
 # Operations and verification
 
-Use a dedicated MEMSVC_DATA_DIR. Core runtime files, snapshots, feedback and
-ledgers default there. Some legacy maintenance scripts still contain machine
-paths: review and configure them before explicit use. Install never runs them.
-No launchd/PM2/systemd changes are performed. Ctrl-C stops foreground service.
+Use a dedicated MEMSVC_DATA_DIR. Core runtime files, snapshots, backups and
+feedback default there; every path is configurable via environment variables
+(see README Configuration). Nothing writes outside the configured data dir.
+Install never starts a daemon or changes launchd/systemd. Ctrl-C stops a
+foreground service.
 
 Use backup.py's SQLite backup API for consistent WAL snapshots. Never copy only
 a live main DB file or invoke restore during validation. Keep backups private.
 
-Default release tests: `python -m pytest tests -v`. conftest sets all paths before
-imports. The storage test seeds a synthetic DB, uses SQLite backup to create an
-isolated clone, sets MEMSVC_DB to it and queries that clone. Production is never
+Default release tests: `python -m pytest tests -v`. Tests set all paths to
+throwaway directories before importing runtime modules. The storage test seeds a
+synthetic DB, uses SQLite backup to create an isolated clone, sets MEMSVC_DB to
+it and queries that clone. Production is never
 opened. HTTP tests use the real handler with an in-memory transport, suitable for
 sandboxes that cannot bind sockets. They do not certify an actual network server.
 

@@ -1,4 +1,4 @@
-<h1 align="center">cross-agent-memory</h1>
+<h1 align="center">Cross-Agent Memory</h1>
 
 <p align="center">
   <b>One local memory for all your AI coding agents.</b><br>
@@ -14,6 +14,11 @@
 </p>
 
 **English** | [中文](README.zh-CN.md)
+
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="Terminal demo: install, verify, store and search memory" width="860">
+</p>
+<p align="center"><i>Real run: install → verify → store → search. No mock-ups.</i></p>
 
 ---
 
@@ -293,7 +298,8 @@ Everything works with defaults; tune via environment variables when needed:
 | `MEMSVC_BIT_RECALL` | `on` | 1-bit coarse recall prefilter (`off` to disable) |
 | `MEMSVC_MAX_CONCURRENCY` | `8` | HTTP worker cap (503 fast-fail beyond) |
 | `MEMSVC_STALL_WATCHDOG` | `on` | Dump stacks when a search stalls |
-| `MEMSVC_TOKEN` | *(unset)* | Set to require `Authorization: Bearer <token>` on writes |
+| `MEMSVC_AUTH` | *(unset)* | `1` enables bearer-token auth (writes require `Authorization: Bearer <token>`) |
+| `MEMSVC_API_TOKEN` | *(unset)* | Bearer secret; setting it also enables auth |
 | `MEMSVC_READ_REQUIRES_TOKEN` | *(unset)* | `1` also requires the token for reads |
 | `MEMSVC_BACKUP_DIR` | `backups` | Database backup directory |
 | `MEMSVC_SLOW_THRESHOLD_MS` | `8000` | Slow-query threshold for health |

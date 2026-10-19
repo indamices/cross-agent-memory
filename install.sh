@@ -11,8 +11,21 @@ if [ "$mode" = --dry-run ]; then
   echo 'DRY-RUN: no files created, no service started, no model downloaded'
   exit 0
 fi
-if [ ! -x .venv/bin/python ]; then "$py" -m venv .venv; fi
-.venv/bin/python -m pip install .
+if [ ! -x .venv/bin/python ]; then
+  if ! "$py" -m venv .venv; then
+    echo 'note: full venv creation failed (broken ensurepip) — creating pip-less venv'
+    "$py" -m venv --without-pip .venv
+  fi
+fi
+# Some Python builds ship a broken ensurepip (venv exists but has no pip).
+# Fall back to driving the parent interpreter's pip into the venv.
+if .venv/bin/python -m pip --version >/dev/null 2>&1; then
+  .venv/bin/python -m pip install -q --disable-pip-version-check .
+else
+  echo 'note: venv pip missing (broken ensurepip) — bootstrapping via parent pip'
+  "$py" -m venv --without-pip .venv
+  "$py" -m pip install -q --disable-pip-version-check --python .venv .
+fi
 export MEMSVC_DATA_DIR="${MEMSVC_DATA_DIR:-$PWD/.local-data}"
 export MEMSVC_DB="${MEMSVC_DB:-$MEMSVC_DATA_DIR/memory.db}"
 .venv/bin/python - <<'PY'
@@ -28,5 +41,5 @@ probe_b = db.get_or_create_collection("install-probe")
 assert probe_a == probe_b, "bootstrap not idempotent"
 print("schema bootstrap OK (idempotent)")
 PY
-printf 'Installation complete. Start from this checkout:\nMEMSVC_DATA_DIR=%q MEMSVC_DB=%q .venv/bin/memory-service\n' "$MEMSVC_DATA_DIR" "$MEMSVC_DB"
+printf 'Installation complete. Start:\nMEMSVC_DATA_DIR=%q .venv/bin/memory-service\n' "$MEMSVC_DATA_DIR"
 echo 'Next: follow INSTALL-FOR-AI.md for Ollama, health and real write/search verification.'

@@ -32,7 +32,7 @@ from pathlib import Path
 
 import numpy as np
 
-from config import SQLITE_DB, SEARCH, SERVICE_DIR, OPENCLAW_MEMORY_DIR
+from config import DATA_DIR, SQLITE_DB, SEARCH, OPENCLAW_MEMORY_DIR
 
 # ── MS-C (sqlite-vec): 派生 vec0 索引, 消灭整矩阵物化 ──────────────────────
 # 真相源仍是 chunks 表; vec_chunks 是派生索引 (scripts/migrate_to_vec0.py 可重建).
@@ -51,7 +51,7 @@ logger = logging.getLogger("memory-service.db")
 
 _feedback: dict[str, dict] = {}
 _feedback_lock = threading.Lock()
-_FEEDBACK_PATH = SERVICE_DIR / SEARCH.feedback_file
+_FEEDBACK_PATH = DATA_DIR / SEARCH.feedback_file
 
 _conn_lock = threading.Lock()
 _write_lock = threading.Lock()
@@ -3579,7 +3579,7 @@ _TIER_PROMOTE_TOPN = int(os.environ.get("MEMSVC_TIER_PROMOTE_TOPN", "5"))  # 翻
 # 层边界默认值 (rebuild 可收缩 hot; upsert 经 tier_meta.hot_days_effective 同源取值)
 _TIER_HOT_DAYS_DEFAULT = float(os.environ.get("MEMSVC_TIER_HOT_DAYS", "7"))
 _TIER_WARM_DAYS = float(os.environ.get("MEMSVC_TIER_WARM_DAYS", "30"))
-_TIER_PROMOTION_LEDGER = SERVICE_DIR / "data" / "tier_promotions.jsonl"
+_TIER_PROMOTION_LEDGER = DATA_DIR / "data" / "tier_promotions.jsonl"
 
 # ── T-MEMDB-COLD-SPLIT-EXEC-0830 (2026-08-30, maintainer-approved): cold 层物理分库 ──────────
 # 归属: 主库 = hot+warm 行 (chunks/vec_hot/vec_warm/chunk_tier[hot,warm]);
@@ -3591,7 +3591,7 @@ _TIER_PROMOTION_LEDGER = SERVICE_DIR / "data" / "tier_promotions.jsonl"
 #   返回 + logger.error + 计数 (health/检索响应显式暴露 cold_db_degraded) —
 #   不 raise: 冷层是弱结果补扫层 (W3 设计§二), 它的故障不应放倒主检索。
 # killswitch: MEMSVC_COLD_SPLIT=off → 一切按未分库 (秒回退, 无需改库)。
-COLD_DB_PATH = Path(os.environ.get("MEMSVC_COLD_DB", SERVICE_DIR / "memory_cold.db"))
+COLD_DB_PATH = Path(os.environ.get("MEMSVC_COLD_DB", DATA_DIR / "memory_cold.db"))
 _COLD_SPLIT_TABLE = "cold_split_meta"
 _cold_state_cache: tuple[float, str] | None = None  # (ts, state)
 _cold_counts_cache: tuple[float, dict[str, int]] | None = None  # (ts, counts)

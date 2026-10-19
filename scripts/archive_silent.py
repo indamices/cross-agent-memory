@@ -18,7 +18,7 @@ sys.path.insert(0, str(SERVICE_DIR))
 
 from config import SERVER  # noqa: E402
 
-TOKEN = os.environ.get("MEMSVC_TOKEN", "").strip()
+TOKEN = os.environ.get("MEMSVC_API_TOKEN", "").strip()
 
 LOG_FILE = SERVICE_DIR / "logs" / "archive_cron.log"
 API_URL = f"http://{SERVER.host}:{SERVER.port}/api/archive-snapshots"
@@ -55,7 +55,7 @@ def main():
                 log.info("No snapshots to archive")
     except HTTPError as e:
         log.error(f"HTTP {e.code} from service: {e.read()[:200]!r} "
-                  f"(401 = token required; set MEMSVC_TOKEN)")
+                  f"(401 = token required; set MEMSVC_API_TOKEN)")
     except URLError as e:
         log.error(f"Cannot connect to service: {e}")
     except Exception as e:

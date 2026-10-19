@@ -136,8 +136,8 @@ back (`_promote_cold_to_hot`) with a promotion ledger for auditability.
 ## Security model
 
 - Binds to `127.0.0.1` by default.
-- Optional bearer-token auth via env: `MEMSVC_TOKEN` protects write
-  endpoints; `MEMSVC_READ_REQUIRES_TOKEN=1` also protects reads.
+- Optional bearer-token auth via env: `MEMSVC_AUTH=1` + `MEMSVC_API_TOKEN`
+  protect write endpoints; `MEMSVC_READ_REQUIRES_TOKEN=1` also protects reads.
 - `POST /api/restore` additionally validates the backup name against the
   `YYYY-MM-DD_HHMMSS` format and confines it to the backup root (no path
   traversal).

@@ -40,8 +40,9 @@ and enter it; never replace an existing checkout. No repository URL is assumed.
    and client instruction destination. State unverified steps explicitly.
 
 Optional authentication: set `MEMSVC_AUTH=1` and a nonempty secret
-`MEMSVC_API_TOKEN` in the launching process; never commit it. Write routes and
-authenticated reads require it; the server refuses to start with auth enabled
-but no token. This protocol never exposes the service publicly.
+`MEMSVC_API_TOKEN` in the launching process; never commit it. Write routes
+require it; set `MEMSVC_READ_REQUIRES_TOKEN=1` to protect reads too. The server
+refuses to start with auth enabled but no token. This protocol never exposes the
+service publicly.
 Stop a foreground process with Ctrl-C. Uninstall by removing only the newly
 created venv; preserve data unless its deletion is explicitly requested.

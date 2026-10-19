@@ -14,16 +14,16 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 
-from config import BACKUP, SQLITE_DB, SERVICE_DIR
+from config import BACKUP, DATA_DIR, SQLITE_DB
 
 # Snapshot dir is relative to the service directory by default;
 # override with MEMSVC_SNAPSHOT_DIR.
 _API_SNAPSHOT_DIR = Path(os.environ.get(
-    "MEMSVC_SNAPSHOT_DIR", str(SERVICE_DIR / "api_snapshots")))
+    "MEMSVC_SNAPSHOT_DIR", str(DATA_DIR / "api_snapshots")))
 
 logger = logging.getLogger("memory-service.backup")
 
-_BACKUP_ROOT = SERVICE_DIR / BACKUP.backup_dir
+_BACKUP_ROOT = DATA_DIR / BACKUP.backup_dir
 
 def get_api_snapshot_dir() -> Path:
     return _API_SNAPSHOT_DIR
@@ -67,9 +67,9 @@ def backup_sqlite() -> dict:
         cleanup_old_backups()
 
         try:
-            rel_dir = str(backup_path.relative_to(SERVICE_DIR))
+            rel_dir = str(backup_path.relative_to(DATA_DIR))
         except ValueError:
-            rel_dir = str(backup_path)  # custom MEMSVC_BACKUP_DIR outside SERVICE_DIR
+            rel_dir = str(backup_path)  # custom MEMSVC_BACKUP_DIR outside DATA_DIR
         return {
             "status": "ok",
             "backup_dir": rel_dir,
@@ -229,7 +229,7 @@ _SNAPSHOT_DIRS = [
     Path(_API_SNAPSHOT_DIR.parent / "pre_compress"),
 ]
 
-_ARCHIVE_ROOT = SERVICE_DIR / "archives"
+_ARCHIVE_ROOT = DATA_DIR / "archives"
 
 
 def archive_snapshots(days: int | None = None) -> dict:

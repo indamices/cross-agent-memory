@@ -8,8 +8,16 @@ from dataclasses import dataclass, field
 
 
 SERVICE_DIR = Path(__file__).parent
-SQLITE_DB = Path(os.environ.get("MEMSVC_DB", SERVICE_DIR / "memory.db"))
-PROJECTS_DIR = SERVICE_DIR / "projects"
+# Base directory for runtime data (DB, backups, snapshots, logs, projects).
+# Source checkouts keep data next to the code; pip-installed CLI defaults to an
+# XDG data dir. MEMSVC_DATA_DIR overrides the base; explicit per-path variables
+# (MEMSVC_DB, MEMSVC_BACKUP_DIR, MEMSVC_SNAPSHOT_DIR) always win.
+_IS_SOURCE_CHECKOUT = (SERVICE_DIR / "pyproject.toml").exists()
+_DEFAULT_DATA_DIR = (SERVICE_DIR if _IS_SOURCE_CHECKOUT else
+                     Path.home() / ".local" / "share" / "cross-agent-memory")
+DATA_DIR = Path(os.environ.get("MEMSVC_DATA_DIR", str(_DEFAULT_DATA_DIR))).expanduser()
+SQLITE_DB = Path(os.environ.get("MEMSVC_DB", DATA_DIR / "memory.db"))
+PROJECTS_DIR = Path(os.environ.get("MEMSVC_PROJECTS_DIR", DATA_DIR / "projects"))
 OPENCLAW_MEMORY_DIR = Path.home() / ".openclaw" / "memory"
 
 
@@ -99,7 +107,7 @@ class MonitorConfig:
 
 @dataclass
 class BackupConfig:
-    backup_dir: str = os.environ.get("MEMSVC_BACKUP_DIR", "backups")
+    backup_dir: str = os.environ.get("MEMSVC_BACKUP_DIR", str(DATA_DIR / "backups"))
     max_backups: int = 7
     archive_days: int = 30
 
@@ -114,13 +122,15 @@ class SecurityConfig:
 def _load_security_config() -> SecurityConfig:
     """Bearer-token auth from env.
 
-    MEMSVC_TOKEN              — set it to require `Authorization: Bearer <token>`
+    MEMSVC_AUTH                — "1"/"true"/"yes" enables authentication
+    MEMSVC_API_TOKEN           — bearer secret; setting it also enables auth
     MEMSVC_READ_REQUIRES_TOKEN — "1"/"true"/"yes" also protects read endpoints
                                  (default: reads stay open, writes need the token)
     """
-    token = os.environ.get("MEMSVC_TOKEN", "").strip()
+    token = os.environ.get("MEMSVC_API_TOKEN", "").strip()
+    auth_flag = os.environ.get("MEMSVC_AUTH", "").strip().lower() in ("1", "true", "yes")
     return SecurityConfig(
-        enabled=bool(token),
+        enabled=auth_flag or bool(token),
         api_token=token,
         read_requires_token=os.environ.get("MEMSVC_READ_REQUIRES_TOKEN", "").strip().lower()
         in ("1", "true", "yes"),
@@ -131,7 +141,7 @@ def _load_security_config() -> SecurityConfig:
 class AlertConfig:
     """Feishu alert configuration for health check cron.
 
-    Credentials are read from a ``.alert.env`` file in SERVICE_DIR
+    Credentials are read from a ``.alert.env`` file in DATA_DIR
     (one key=value per line). Falls back to empty strings if the file
     does not exist — alerts are silently skipped.
     """
@@ -163,7 +173,7 @@ DEFAULT_EXCLUDE = [
 
 def _load_alert_config() -> AlertConfig:
     """Load Feishu credentials from ``.alert.env`` file."""
-    env_file = SERVICE_DIR / ".alert.env"
+    env_file = DATA_DIR / ".alert.env"
     cfg = AlertConfig()
     if not env_file.exists():
         return cfg

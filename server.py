@@ -21,7 +21,7 @@ from urllib.parse import urlparse
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
 
-from config import SERVER, EMBEDDING, MONITOR, discover_projects, PROJECTS_DIR, SERVICE_DIR
+from config import SERVER, EMBEDDING, MONITOR, discover_projects, PROJECTS_DIR, DATA_DIR
 from config import load_project_config, SECURITY
 from db import (
     VecFallbackError,
@@ -1385,7 +1385,7 @@ def _warmup_embeddings_cache(top_n: int | None = None, delay_s: float = 5.0):
     import time as _time
     try:
         _time.sleep(delay_s)
-        if (SERVICE_DIR / ".no_warmup").exists():
+        if (DATA_DIR / ".no_warmup").exists():
             logger.info("[warmup] .no_warmup 存在, 跳过预热")
             return
         from db import _load_collection_embeddings, list_collections, collection_count
@@ -1451,7 +1451,7 @@ def main():
     # Fresh-install bootstrap: ensure the data dir exists; db.py creates the
     # schema lazily on first connection (idempotent). Fail fast on a security
     # misconfiguration instead of silently rejecting every request.
-    SERVICE_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     if SECURITY.enabled and not SECURITY.api_token:
         raise RuntimeError("MEMSVC_AUTH requires MEMSVC_API_TOKEN")
 
@@ -1469,7 +1469,7 @@ def main():
         pass  # Port is free, we can proceed
 
     # PID file for additional duplicate detection
-    pid_file = SERVICE_DIR / ".memory-service.pid"
+    pid_file = DATA_DIR / ".memory-service.pid"
     try:
         existing_pid = pid_file.read_text().strip()
         if existing_pid:

@@ -3,8 +3,8 @@
 Base URL: `http://127.0.0.1:5370` (configurable via `MEMSVC_PORT`).
 All responses are JSON.
 
-**Auth**: set `MEMSVC_TOKEN=<secret>` before starting the server to require
-`Authorization: Bearer <secret>` on write endpoints (add
+**Auth**: start the server with `MEMSVC_AUTH=1` and `MEMSVC_API_TOKEN=<secret>`
+to require `Authorization: Bearer <secret>` on write endpoints (add
 `MEMSVC_READ_REQUIRES_TOKEN=1` to also protect reads).
 
 ---

@@ -21,7 +21,7 @@ import time
 from collections import deque
 from pathlib import Path
 
-from config import MONITOR, SERVICE_DIR
+from config import MONITOR, DATA_DIR
 
 logger = logging.getLogger("memory-service.monitor")
 
@@ -256,17 +256,17 @@ def get_metrics() -> dict:
 
 
 def disk_info(path: str | None = None) -> dict:
-    """Get disk usage information for the given path (defaults to SERVICE_DIR).
+    """Get disk usage information for the given path (defaults to DATA_DIR).
 
     Args:
-        path: Path to check. Defaults to ``SERVICE_DIR``.
+        path: Path to check. Defaults to ``DATA_DIR``.
 
     Returns:
         Dict with ``total_gb``, ``free_gb``, ``used_gb``, and ``used_pct`` keys.
         Returns empty dict on error.
     """
     try:
-        target = path or str(SERVICE_DIR)
+        target = path or str(DATA_DIR)
         usage = shutil.disk_usage(target)
         total = round(usage.total / (1024**3), 1)
         free = round(usage.free / (1024**3), 1)
@@ -289,7 +289,7 @@ def disk_info(path: str | None = None) -> dict:
 
 # 与外部 footprint monitor 的 hang dump 同目录 (P01), 便于一处归档比对。
 STALL_DUMP_DIR = Path(os.environ.get(
-    "MEMSVC_STALL_DUMP_DIR", str(SERVICE_DIR / "logs" / "stall_dumps")))
+    "MEMSVC_STALL_DUMP_DIR", str(DATA_DIR / "logs" / "stall_dumps")))
 
 _inflight_lock = threading.Lock()
 _inflight: dict[int, tuple[float, str]] = {}   # token → (t0, label)

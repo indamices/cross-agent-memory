@@ -1,4 +1,4 @@
-<h1 align="center">cross-agent-memory</h1>
+<h1 align="center">Cross-Agent Memory</h1>
 
 <p align="center">
   <b>给所有 AI 编程 Agent 共用的一份本地记忆。</b><br>
@@ -14,6 +14,11 @@
 </p>
 
 [English](README.md) | **中文**
+
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="终端演示：安装、验证、写入与检索" width="860">
+</p>
+<p align="center"><i>真实运行：安装 → 验证 → 写入 → 检索，无摆拍。</i></p>
 
 ---
 
@@ -281,7 +286,8 @@ env = { MEMORY_SERVICE_URL = "http://127.0.0.1:5370" }
 | `MEMSVC_BIT_RECALL` | `on` | 1-bit 粗召回预筛开关 |
 | `MEMSVC_MAX_CONCURRENCY` | `8` | HTTP 并发上限（超出快速 503） |
 | `MEMSVC_STALL_WATCHDOG` | `on` | 检索卡顿时抓取线程栈 |
-| `MEMSVC_TOKEN` | *(未设置)* | 设置后写操作需 `Authorization: Bearer <token>` |
+| `MEMSVC_AUTH` | *(未设置)* | `1` 启用 Bearer 鉴权（写操作需 `Authorization: Bearer <token>`） |
+| `MEMSVC_API_TOKEN` | *(未设置)* | Bearer 密钥；单独设置也会启用鉴权 |
 | `MEMSVC_READ_REQUIRES_TOKEN` | *(未设置)* | `1` 时读操作也需 token |
 | `MEMSVC_BACKUP_DIR` | `backups` | 数据库备份目录 |
 | `MEMSVC_SLOW_THRESHOLD_MS` | `8000` | 慢查询阈值（健康判定用） |
