@@ -5,6 +5,7 @@ numpy brute-force fallback for legacy databases). No external vector DB.
 """
 
 import hashlib
+import hmac
 import json
 import logging
 import os
@@ -501,15 +502,23 @@ class _Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def setup(self):
+        self.request.settimeout(10)
+        super().setup()
+
     def _read_body(self):
-        length = int(self.headers.get("Content-Length", 0))
-        if not length:
-            return ""
+        if self.headers.get("Transfer-Encoding"):
+            raise ValueError("Transfer-Encoding is unsupported")
+        lengths = self.headers.get_all("Content-Length", [])
+        if len(lengths) != 1 or not lengths[0].isascii() or not lengths[0].isdigit():
+            raise ValueError("one non-negative Content-Length required")
+        length = int(lengths[0])
+        if length > 1024 * 1024:
+            raise OverflowError("request body exceeds 1 MiB")
         raw = self.rfile.read(length)
-        try:
-            return raw.decode("utf-8")
-        except UnicodeDecodeError:
-            return raw.decode("utf-8", errors="replace")
+        if len(raw) != length:
+            raise ValueError("incomplete request body")
+        return raw.decode("utf-8")
 
     # --- Auth middleware -------------------------------------------------
 
@@ -548,9 +557,10 @@ class _Handler(BaseHTTPRequestHandler):
             return True
 
         # Extract token from Authorization header
-        token = self.headers.get("Authorization", "").replace("Bearer ", "").strip()
+        auth = self.headers.get("Authorization", "")
+        token = auth[7:] if auth.startswith("Bearer ") else ""
 
-        if not token or token != SECURITY.api_token:
+        if not token or not hmac.compare_digest(token.encode(), SECURITY.api_token.encode()):
             self._json_response({"error": "unauthorized"}, 401)
             return False
 
@@ -709,7 +719,23 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
-        body = self._read_body()
+        self.close_connection = True
+        if path not in self._POST_ROUTES:
+            self._json_response({"error": "not found"}, 404)
+            return
+        if not self._check_auth(path, is_read=False):
+            return
+        try:
+            body = self._read_body()
+        except OverflowError as exc:
+            self._json_response({"error": str(exc)}, 413)
+            return
+        except (ValueError, UnicodeDecodeError) as exc:
+            self._json_response({"error": str(exc)}, 400)
+            return
+        except (TimeoutError, socket.timeout):
+            self._json_response({"error": "request body timeout"}, 408)
+            return
         t0 = time.time()
         success = True
         # T-MEMSVC-DEGRADED-FIX: search 慢查询逐条日志需要 project/query 上下文
@@ -722,6 +748,10 @@ class _Handler(BaseHTTPRequestHandler):
                 data = json.loads(body) if body else {}
             except json.JSONDecodeError:
                 self._json_response({"error": "invalid JSON"}, 400)
+                return
+
+            if not isinstance(data, dict):
+                self._json_response({"error": "JSON object required"}, 400)
                 return
 
             if path == "/api/search" and isinstance(data, dict):
@@ -1417,6 +1447,13 @@ def main():
 
     # 2026-05-16: 优雅关闭, 防 SQLite 损坏 (scheduled restart 配套)
     _install_signal_handlers()
+
+    # Fresh-install bootstrap: ensure the data dir exists; db.py creates the
+    # schema lazily on first connection (idempotent). Fail fast on a security
+    # misconfiguration instead of silently rejecting every request.
+    SERVICE_DIR.mkdir(parents=True, exist_ok=True)
+    if SECURITY.enabled and not SECURITY.api_token:
+        raise RuntimeError("MEMSVC_AUTH requires MEMSVC_API_TOKEN")
 
     # Startup lock: prevent duplicate instances by checking port availability
     try:
