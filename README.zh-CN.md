@@ -126,13 +126,15 @@ curl -s -X POST http://127.0.0.1:5370/api/register \
 ```
 
 > 目录下可以放 `.memory-service.yaml`（见 [examples/](examples/)）；
-> 没有则使用合理默认值。注册后立即索引，之后的文件变化会被实时监控。
+> 没有则使用合理默认值。注册后立即索引；之后的文件变化按防抖窗口批量入库
+> （默认 **1 小时**，`MEMSVC_WATCH_DEBOUNCE` 可调）。需要改完立即可搜：
+> `POST /api/reindex {"project": "..."}`，或以 `MEMSVC_WATCH_DEBOUNCE=0` 启动。
 
 或者用连接器汇入 AI 工具的历史会话：
 
 ```bash
 python3 connectors/index_claude_code.py     # ~/.claude/projects/**/*.jsonl
-python3 connectors/index_opencode.py        # ~/.local/share/opencode/*.db
+python3 connectors/index_opencode.py        # ~/.local/share/opencode/opencode.db
 python3 connectors/index_zcode.py           # ~/.zcode/v2/tasks-index.sqlite
 ```
 
@@ -187,7 +189,7 @@ env = { MEMORY_SERVICE_URL = "http://127.0.0.1:5370" }
 ```
 
 **Cursor / 其他 MCP Agent**——在其 MCP 设置中填同样的 command/args 即可。
-若服务开启了鉴权（`security.enabled`），再设置 `MEMORY_SERVICE_TOKEN`。
+若启动服务时设置了 `MEMSVC_TOKEN`，MCP server 侧也需设置 `MEMORY_SERVICE_TOKEN`。
 
 接入后，Agent 拥有三个工具：
 

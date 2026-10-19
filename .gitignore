@@ -14,7 +14,6 @@ api_snapshots/
 archives/
 data/
 .alert.env
-C:/
 
 # python
 __pycache__/

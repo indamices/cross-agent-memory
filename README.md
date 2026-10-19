@@ -13,6 +13,8 @@
   <img alt="Local-first" src="https://img.shields.io/badge/cloud-none%20%C2%B7%20data%20stays%20local-2ea44f.svg">
 </p>
 
+**English** | [中文](README.zh-CN.md)
+
 ---
 
 ## The problem
@@ -129,14 +131,16 @@ curl -s -X POST http://127.0.0.1:5370/api/register \
 ```
 
 > The folder needs a `.memory-service.yaml` or sensible defaults are used —
-> see [examples/](examples/). Files are indexed immediately and watched for
-> changes afterwards.
+> see [examples/](examples/). Files are indexed immediately; later changes are
+> batched by a debounce window (default **1 hour**, `MEMSVC_WATCH_DEBOUNCE`).
+> For instant pickup: `POST /api/reindex {"project": "..."}` or start with
+> `MEMSVC_WATCH_DEBOUNCE=0`.
 
 Or ingest AI-tool session history with a connector:
 
 ```bash
 python3 connectors/index_claude_code.py     # ~/.claude/projects/**/*.jsonl
-python3 connectors/index_opencode.py        # ~/.local/share/opencode/*.db
+python3 connectors/index_opencode.py        # ~/.local/share/opencode/opencode.db
 python3 connectors/index_zcode.py           # ~/.zcode/v2/tasks-index.sqlite
 ```
 
@@ -191,8 +195,8 @@ env = { MEMORY_SERVICE_URL = "http://127.0.0.1:5370" }
 ```
 
 **Cursor / other MCP agents** — same server command and args in that tool's MCP
-settings. If the service enables auth (`security.enabled`), also set
-`MEMORY_SERVICE_TOKEN`.
+settings. If you started the service with `MEMSVC_TOKEN` set, also set
+`MEMORY_SERVICE_TOKEN` for the MCP server.
 
 Once connected, your agent gets:
 

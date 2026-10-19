@@ -466,7 +466,7 @@ def main():
         _chk.close()
         if _st and str(_st[0]) == "active":
             print("[tier_rebuild] 拒跑: cold 分库 state=active — rebuild 会把冷行物化回主库 "
-                  "(违反冷库归属)。需先 scripts/cold_split.py rollback 再 rebuild。",
+                  "(违反冷库归属)。需先回滚 cold 分库 (split 工具未随本包发布) 再 rebuild。",
                   file=sys.stderr)
             sys.exit(2)
     except sqlite3.OperationalError:  # cold_split_meta 表不存在 = 未分库 (命名: 吞的是无表)

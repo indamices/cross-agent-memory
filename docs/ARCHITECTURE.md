@@ -31,8 +31,8 @@ Everything lives in one SQLite database (default `./memory.db`):
 - **Tier tables** (optional, large corpora): `vec_chunks_hot/_warm/_cold`
   plus `chunk_tier` / `tier_meta` registries, built by
   `scripts/tier_rebuild.py`. Rows move between tiers based on age and access
-  (hot stays small; cold can live in a separate database file via
-  `scripts/cold_split.py`).
+  (hot stays small; the storage layer supports splitting cold into a separate
+  database file, though the split tooling is not included in this release).
 
 Because vectors are derived and files on disk are the ultimate source,
 `memory.db` is fully disposable: delete it and re-run the connectors to rebuild.
@@ -44,10 +44,13 @@ Two paths feed the database:
 **1. File watcher** (`indexer.py`)
 
 - `POST /api/register` or a YAML in `projects/` registers a root directory.
-- Files are chunked (default 800/100 chars overlap; sessions use 1200/200),
-  embedded in batches and upserted.
-- A watchdog observer applies a debounce window (`MEMSVC_WATCH_DEBOUNCE`) and
-  re-indexes only changed files (mtime + content hash).
+- Files and session connectors both chunk at 800/100 chars (size/overlap);
+  the `examples/` session-watcher configs demonstrate a 1200/200 setting for
+  long transcripts.
+- A watchdog observer batches changes in a debounce window (`MEMSVC_WATCH_DEBOUNCE`,
+  default **3600 s**) and then re-indexes only changed files (mtime + content
+  hash). Set it to `0` for immediate indexing, or trigger
+  `POST /api/reindex` to pick changes up on demand.
 - Deleted content is removed per-source, never globally.
 
 **2. Session connectors** (`connectors/`)
@@ -138,7 +141,9 @@ back (`_promote_cold_to_hot`) with a promotion ledger for auditability.
 - `POST /api/restore` additionally validates the backup name against the
   `YYYY-MM-DD_HHMMSS` format and confines it to the backup root (no path
   traversal).
-- No telemetry, no external calls except the local Ollama endpoint. The
+- No telemetry, no external calls except the local Ollama endpoint (the sole
+  opt-in exception is the alert webhook in `scripts/health_check.py`, which is
+  disabled unless `.alert.env` is configured). The
   embedder explicitly bypasses HTTP proxies so local calls can never leak
   through a system proxy.
 
