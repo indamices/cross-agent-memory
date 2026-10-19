@@ -91,6 +91,28 @@ No cloud. No accounts. Nothing ever leaves your machine.
 Design notes and the full retrieval pipeline are documented in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+## 🤖 Let your AI agent install it (one paste)
+
+The fastest path: open this repository in your AI coding assistant and paste
+the block below. It installs everything locally — venv, dependencies, a fresh
+isolated database — verifies a real write/search round trip, and reports back
+with exact commands and results. Nothing is sent anywhere; the agent works on
+your machine only.
+
+```text
+Install this repository locally. Read AGENTS.md and INSTALL-FOR-AI.md first.
+Use ./install.sh --dry-run, then ./install.sh. Keep all runtime data isolated
+from existing databases and bind only 127.0.0.1. Verify initialization twice,
+Ollama bge-m3, health, and a real write/search round trip using examples/run.py.
+Add the client instructions from examples/client-instructions.md. Report exact
+commands, results and blockers; do not claim success from health alone.
+Do not import personal projects, restore backups or change system services.
+```
+
+Prefer doing it yourself? The manual path is right below. The same protocol
+is documented for agents in [INSTALL-FOR-AI.md](INSTALL-FOR-AI.md) and
+[AGENTS.md](AGENTS.md).
+
 ## Quickstart
 
 ### 0. Prerequisites

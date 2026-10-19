@@ -16,9 +16,8 @@ with tempfile.TemporaryDirectory(prefix="memsvc-example-") as work:
                         "MEMSVC_COLD_DB": "cold.db", "MEMSVC_PROJECTS_DIR": "projects",
                         "MEMSVC_BACKUP_DIR": "backups", "MEMSVC_SNAPSHOT_DIR": "snapshots"}.items():
         os.environ[key] = str(Path(work) / suffix)
-    from schema import initialize
-    initialize()
     import db
+    db.get_or_create_collection(args.case)  # first connection bootstraps a fresh schema
     text = (Path(__file__).parent / args.case / "memory.md").read_text()
     if args.offline:
         vector = [1.0] + [0.0] * 1023

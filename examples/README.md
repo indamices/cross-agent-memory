@@ -6,5 +6,3 @@ real document, retrieves it, asserts the result, and removes the DB. Add --offli
 for deterministic storage-only verification without Ollama.
 
 Use client-instructions.md to connect an assistant to the local HTTP API.
-legacy-projects contains the original personal project configuration for historical
-reference only: paths must be replaced and content reviewed before opting in.

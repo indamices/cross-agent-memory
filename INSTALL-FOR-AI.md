@@ -16,8 +16,9 @@ and enter it; never replace an existing checkout. No repository URL is assumed.
 3. **Data:** export `MEMSVC_DATA_DIR="$PWD/.local-data"` and
    `MEMSVC_DB="$MEMSVC_DATA_DIR/memory.db"` in each terminal. For a customized
    installation preserve the paths printed by the installer. Run
-   `.venv/bin/memory-service-init` twice. Both must succeed. Do not point these
-   variables at an existing production DB for validation.
+   `.venv/bin/python -c "import db; db.get_or_create_collection('install-probe')"`
+   twice; both must succeed (the schema is created on first use, idempotently).
+   Do not point these variables at an existing production DB for validation.
 4. **Model:** check `ollama --version`; start Ollama using its normal local
    application/service; run `ollama pull bge-m3`. Verify
    `curl --fail http://localhost:11434/api/tags` lists bge-m3. On network, disk or
@@ -34,13 +35,13 @@ and enter it; never replace an existing checkout. No repository URL is assumed.
    incomplete. `--offline` only checks storage and cannot certify model readiness.
 7. **Connect:** add examples/client-instructions.md to the user's chosen
    assistant's project instruction file, preserving existing content. Register
-   only a user-selected project (docs/api.md), with narrow watch targets. Do not
-   auto-register examples/legacy-projects: these are historical personal configs.
+   only a user-selected project (docs/API.md), with narrow watch targets.
 8. **Report:** exact paths, Python, commands, health fields, example results,
    and client instruction destination. State unverified steps explicitly.
 
 Optional authentication: set `MEMSVC_AUTH=1` and a nonempty secret
-`MEMSVC_API_TOKEN` in the launching process; never commit it. All routes except
-health require it by default. This protocol never exposes the service publicly.
+`MEMSVC_API_TOKEN` in the launching process; never commit it. Write routes and
+authenticated reads require it; the server refuses to start with auth enabled
+but no token. This protocol never exposes the service publicly.
 Stop a foreground process with Ctrl-C. Uninstall by removing only the newly
 created venv; preserve data unless its deletion is explicitly requested.

@@ -87,6 +87,27 @@
 
 设计细节与完整检索流水线见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
+## 🤖 让你的 AI 帮你装（一条指令）
+
+最快的安装方式：在本仓库（或把仓库地址给 AI）里打开你的 AI 编程助手，
+把下面这段话原样粘贴给它。它会在本地完成全部安装——虚拟环境、依赖、全新
+隔离的数据库——并跑一次真实的写入/检索回路验证后向你汇报具体命令与结果。
+所有数据只在本机，不发送到任何地方。
+
+```text
+Install this repository locally. Read AGENTS.md and INSTALL-FOR-AI.md first.
+Use ./install.sh --dry-run, then ./install.sh. Keep all runtime data isolated
+from existing databases and bind only 127.0.0.1. Verify initialization twice,
+Ollama bge-m3, health, and a real write/search round trip using examples/run.py.
+Add the client instructions from examples/client-instructions.md. Report exact
+commands, results and blockers; do not claim success from health alone.
+Do not import personal projects, restore backups or change system services.
+```
+
+（指令本身是英文，保证各类 AI 助手理解一致。）想手动安装就看下面的快速开始。
+面向 AI 的完整协议见 [INSTALL-FOR-AI.md](INSTALL-FOR-AI.md) 与
+[AGENTS.md](AGENTS.md)。
+
 ## 快速开始
 
 ### 0. 前置条件

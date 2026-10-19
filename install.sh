@@ -22,8 +22,11 @@ with sqlite3.connect(':memory:') as c:
     sqlite_vec.load(c)
     c.execute("create virtual table probe using fts5(text, tokenize='trigram')")
     print('sqlite-vec', c.execute('select vec_version()').fetchone()[0], 'FTS5 OK')
-from schema import initialize
-initialize()
+import db
+probe_a = db.get_or_create_collection("install-probe")
+probe_b = db.get_or_create_collection("install-probe")
+assert probe_a == probe_b, "bootstrap not idempotent"
+print("schema bootstrap OK (idempotent)")
 PY
 printf 'Installation complete. Start from this checkout:\nMEMSVC_DATA_DIR=%q MEMSVC_DB=%q .venv/bin/memory-service\n' "$MEMSVC_DATA_DIR" "$MEMSVC_DB"
 echo 'Next: follow INSTALL-FOR-AI.md for Ollama, health and real write/search verification.'
