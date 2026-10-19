@@ -259,6 +259,8 @@ env = { MEMORY_SERVICE_URL = "http://127.0.0.1:5370" }
 | `MEMSVC_MAX_CONCURRENCY` | `8` | HTTP 并发上限（超出快速 503） |
 | `MEMSVC_STALL_WATCHDOG` | `on` | 检索卡顿时抓取线程栈 |
 | `MEMSVC_TOKEN` | *(未设置)* | 设置后写操作需 `Authorization: Bearer <token>` |
+| `MEMSVC_READ_REQUIRES_TOKEN` | *(未设置)* | `1` 时读操作也需 token |
+| `MEMSVC_BACKUP_DIR` | `backups` | 数据库备份目录 |
 | `MEMSVC_SLOW_THRESHOLD_MS` | `8000` | 慢查询阈值（健康判定用） |
 | `MEMORY_MISS_LEDGER` | *关闭* | 零结果/低质结果账本（补写候选） |
 | `MEMORY_HITS_LEDGER` | *关闭* | 每次查询命中采样账本 |

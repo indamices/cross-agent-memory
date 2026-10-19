@@ -6,16 +6,19 @@ logs result to backup_cron.log. Completely silent — no console output.
 
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 
 # Add service dir to path so we can import config
 SERVICE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(SERVICE_DIR))
 
 from config import SERVER  # noqa: E402
+
+TOKEN = os.environ.get("MEMSVC_TOKEN", "").strip()
 
 LOG_FILE = SERVICE_DIR / "logs" / "backup_cron.log"
 API_URL = f"http://{SERVER.host}:{SERVER.port}/api/backup"
@@ -38,6 +41,8 @@ def main():
     try:
         req = Request(API_URL, data=b"{}", method="POST")
         req.add_header("Content-Type", "application/json")
+        if TOKEN:
+            req.add_header("Authorization", f"Bearer {TOKEN}")
         with urlopen(req, timeout=120) as resp:
             data = json.loads(resp.read().decode())
             if data.get("status") == "ok":
@@ -47,6 +52,9 @@ def main():
                 )
             else:
                 log.error(f"Backup FAILED: {data.get('error')}")
+    except HTTPError as e:
+        log.error(f"HTTP {e.code} from service: {e.read()[:200]!r} "
+                  f"(401 = token required; set MEMSVC_TOKEN)")
     except URLError as e:
         log.error(f"Cannot connect to service: {e}")
     except Exception as e:

@@ -194,9 +194,10 @@ def restore_sqlite(backup_name: str) -> dict:
         # yields "disk I/O error" on the next open) and incorrect (a stale
         # -wal resurrects pre-restore writes). The backup API is consistent,
         # atomic, and needs no file deletion; then checkpoint to trim the WAL.
-        src = sqlite3.connect(f"file:{quote(str(backup_db))}?mode=ro", uri=True)
+        src = sqlite3.connect(f"file:{quote(str(backup_db))}?mode=ro", uri=True,
+                              timeout=30)
         try:
-            dst = sqlite3.connect(str(SQLITE_DB))
+            dst = sqlite3.connect(str(SQLITE_DB), timeout=30)
             try:
                 with dst:
                     src.backup(dst)

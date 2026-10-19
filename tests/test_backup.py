@@ -30,8 +30,19 @@ from pathlib import Path
 
 sys.path.insert(0, os.environ["CAM_REPO"])
 
+# config.py binds SQLITE_DB at IMPORT time — the scratch paths must be set
+# before importing db/backup, otherwise the child would operate on the repo's
+# own database (hard-learned via review round 2).
+_TMP = tempfile.mkdtemp(prefix="cam-test-backup-")
+os.environ["MEMSVC_DB"] = os.path.join(_TMP, "memory.db")
+os.environ["MEMSVC_BACKUP_DIR"] = os.path.join(_TMP, "backups")
+
 import backup
 import db
+
+# Hard isolation proof: the modules must have bound to the scratch dir.
+assert str(db.SQLITE_DB).startswith(_TMP), f"child bound to wrong DB: {db.SQLITE_DB}"
+assert str(backup.get_api_snapshot_dir()).startswith(str(Path(os.environ["CAM_REPO"])))
 
 DIM = 1024
 
@@ -87,13 +98,10 @@ class TestBackupRoundTrip(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    tmp = tempfile.mkdtemp(prefix="cam-test-backup-")
-    os.environ["MEMSVC_DB"] = os.path.join(tmp, "memory.db")
-    os.environ["MEMSVC_BACKUP_DIR"] = os.path.join(tmp, "backups")
     try:
         unittest.main(verbosity=2)
     finally:
-        shutil.rmtree(tmp, ignore_errors=True)
+        shutil.rmtree(_TMP, ignore_errors=True)
 """
 
 
