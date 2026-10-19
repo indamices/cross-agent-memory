@@ -1,0 +1,4 @@
+numpy>=1.24
+PyYAML>=6.0
+watchdog>=3.0
+sqlite-vec>=0.1.6

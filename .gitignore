@@ -1,0 +1,29 @@
+# runtime data — never commit
+memory.db
+memory.db-*
+memory_cold.db
+memory_cold.db-*
+*.sqlite
+*.sqlite-*
+last_run*
+.last_run_*
+.memory-service.pid
+logs/
+backups/
+api_snapshots/
+archives/
+data/
+.alert.env
+C:/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+.pytest_cache/
+*.bak
+*.egg-info/
+build/
+dist/

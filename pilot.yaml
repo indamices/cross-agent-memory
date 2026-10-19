@@ -1,0 +1,28 @@
+# Chunker pilot configuration (optional, disabled by default).
+#
+# This mechanism allows testing a new chunker/dedup/blacklist pipeline on a
+# single project before rolling it out everywhere. Fail-safe: a missing or
+# malformed file disables everything and the indexers keep their default
+# behavior. Changes are picked up on mtime change (no process restart needed
+# for `enabled: false`), applies only to `scope_project`.
+#
+# One-key rollback: set `enabled: false`.
+
+enabled: false                         # master switch (default off)
+scope_project: example-project         # only this project is affected
+chunker_version_tag: v2-pilot          # new-chunk metadata tag (old chunks untouched)
+
+dedup:
+  full_content_hash: true              # normalize + hash the FULL content for dedup
+
+blacklist:                             # transcript blacklist filter (per-item toggles)
+  enabled: true
+  skip_system_reminder: true           # strip <system-reminder>...</system-reminder> blocks
+  skip_base64_or_nonnl: true           # drop obvious base64/encoded long strings (conservative)
+  # Regex list for repeatedly-injected boilerplate lines (anchored with [^\n]*
+  # to avoid multi-line over-reach). Start empty and add patterns you observe:
+  injection_card_patterns: []
+
+debounce:                              # batch index trigger window
+  enabled: true
+  window_seconds: 600                  # 5-15min merge window

@@ -1,0 +1,13 @@
+# Drop a file like this into any project root as `.memory-service.yaml`,
+# then register it:  curl -X POST localhost:5370/api/register \
+#                     -d '{"root": "/path/to/project"}'
+name: my-project
+watch_files:
+  - README.md
+watch_dirs:
+  - docs
+exclude_patterns:
+  - "*.pyc"
+  - "__pycache__"
+chunk_size: 800
+chunk_overlap: 100

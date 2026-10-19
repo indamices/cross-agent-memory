@@ -1,0 +1,17 @@
+# Index Claude Code session history (~/.claude/projects/<encoded-cwd>/*.jsonl).
+# The dedicated connector (connectors/index_claude_code.py) is the recommended
+# way to ingest sessions; this watcher config is an alternative that keeps the
+# index fresh while the service runs.
+name: claude-code-sessions
+root: ~/.claude/projects
+watch_dirs:
+  - .
+exclude_patterns:
+  - "*.json"
+  - "*.txt"
+  - "tool-results"
+  - "tasks"
+  - "__pycache__"
+  - "*.pyc"
+chunk_size: 1200
+chunk_overlap: 200

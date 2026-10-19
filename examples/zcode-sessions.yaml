@@ -1,0 +1,3 @@
+# ZCode sessions live in a SQLite db (~/.zcode/v2/tasks-index.sqlite).
+# Use the dedicated connector: connectors/index_zcode.py
+# (watcher-based indexing of that db file is not supported — it is binary).

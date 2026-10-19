@@ -1,0 +1,16 @@
+# Watch a project's documentation and code; re-index on change (live watcher).
+name: my-project
+root: /absolute/path/to/your/project
+watch_files:
+  - README.md
+  - AGENTS.md
+watch_dirs:
+  - docs
+  - scripts
+exclude_patterns:
+  - "*.pyc"
+  - "__pycache__"
+  - "node_modules"
+  - "*.csv"
+chunk_size: 800
+chunk_overlap: 100

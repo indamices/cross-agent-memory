@@ -1,0 +1,12 @@
+# Index OpenCode session history. The dedicated connector
+# (connectors/index_opencode.py) reads the SQLite session database directly
+# and is the recommended path; this watcher config covers exported markdown
+# session files, if you keep any.
+name: opencode-sessions
+root: ~/.local/share/opencode/sessions-export
+watch_dirs:
+  - .
+exclude_patterns:
+  - "*.json"
+chunk_size: 1200
+chunk_overlap: 200
