@@ -1,6 +1,6 @@
 """Silent backup script for memory-service.
 
-Called by Windows scheduled task. Runs POST /api/backup,
+Run from cron / a scheduler. Runs POST /api/backup,
 logs result to backup_cron.log. Completely silent — no console output.
 """
 

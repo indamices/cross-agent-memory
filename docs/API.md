@@ -1,8 +1,11 @@
 # API reference
 
 Base URL: `http://127.0.0.1:5370` (configurable via `MEMSVC_PORT`).
-All responses are JSON. If auth is enabled, send
-`Authorization: Bearer <token>` on every request.
+All responses are JSON.
+
+**Auth**: set `MEMSVC_TOKEN=<secret>` before starting the server to require
+`Authorization: Bearer <secret>` on write endpoints (add
+`MEMSVC_READ_REQUIRES_TOKEN=1` to also protect reads).
 
 ---
 

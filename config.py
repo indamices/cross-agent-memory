@@ -99,7 +99,7 @@ class MonitorConfig:
 
 @dataclass
 class BackupConfig:
-    backup_dir: str = "backups"
+    backup_dir: str = os.environ.get("MEMSVC_BACKUP_DIR", "backups")
     max_backups: int = 7
     archive_days: int = 30
 
@@ -109,6 +109,22 @@ class SecurityConfig:
     enabled: bool = False
     api_token: str = ""
     read_requires_token: bool = False
+
+
+def _load_security_config() -> SecurityConfig:
+    """Bearer-token auth from env.
+
+    MEMSVC_TOKEN              — set it to require `Authorization: Bearer <token>`
+    MEMSVC_READ_REQUIRES_TOKEN — "1"/"true"/"yes" also protects read endpoints
+                                 (default: reads stay open, writes need the token)
+    """
+    token = os.environ.get("MEMSVC_TOKEN", "").strip()
+    return SecurityConfig(
+        enabled=bool(token),
+        api_token=token,
+        read_requires_token=os.environ.get("MEMSVC_READ_REQUIRES_TOKEN", "").strip().lower()
+        in ("1", "true", "yes"),
+    )
 
 
 @dataclass
@@ -132,7 +148,7 @@ SERVER = ServerConfig()
 SEARCH = SearchConfig()
 MONITOR = MonitorConfig()
 BACKUP = BackupConfig()
-SECURITY = SecurityConfig()
+SECURITY = _load_security_config()
 ALERT = AlertConfig()
 # F-1 (reviewer 20260828 裁决/maintainer-approved): SQLite 数据库内部文件按类型拒 — 8/25 事故真因
 # (-wal/-shm/-journal 二进制被当记忆文档嵌入, 1.97万条垃圾向量进库); 与 B5 体积闸互相独立.

@@ -14,7 +14,7 @@ Tools:
 Config (env):
   MEMORY_SERVICE_URL    default http://127.0.0.1:5370
   MEMORY_SERVICE_TOKEN  optional bearer token (if the server enables auth)
-  MEMORY_MCP_TIMEOUT    HTTP timeout seconds, default 30
+  MEMORY_MCP_TIMEOUT    HTTP timeout seconds, default 60
 
 Only the Python standard library is used.
 """
@@ -31,7 +31,7 @@ SERVER_VERSION = "1.0.0"
 
 SERVICE_URL = os.environ.get("MEMORY_SERVICE_URL", "http://127.0.0.1:5370").rstrip("/")
 SERVICE_TOKEN = os.environ.get("MEMORY_SERVICE_TOKEN", "")
-HTTP_TIMEOUT = float(os.environ.get("MEMORY_MCP_TIMEOUT", "30"))
+HTTP_TIMEOUT = float(os.environ.get("MEMORY_MCP_TIMEOUT", "60"))
 
 TOOLS = [
     {
@@ -250,10 +250,8 @@ def _handle(req: dict) -> None:
         args = params.get("arguments") or {}
         impl = TOOL_IMPL.get(name)
         if impl is None:
-            _result(req_id, {
-                "content": [{"type": "text", "text": f"Unknown tool: {name}"}],
-                "isError": True,
-            })
+            # Per MCP spec, an unknown tool name is an invalid-params error.
+            _error(req_id, -32602, f"Unknown tool: {name}")
             return
         try:
             text = impl(args)

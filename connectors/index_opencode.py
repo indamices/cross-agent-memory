@@ -120,13 +120,13 @@ def _discover_dbs():
     """Discover OpenCode SQLite databases.
 
     Resolution order:
-      1. OPENCODE_DBS env — colon-separated list of db paths
+      1. OPENCODE_DBS env — os.pathsep-separated list of db paths
       2. ~/.local/share/opencode/opencode.db — single global db
       3. ~/.local/share/opencode/dbs/*.db — multi-db layout (if present)
     """
     env = os.environ.get("OPENCODE_DBS", "").strip()
     if env:
-        return [Path(p) for p in env.split(":") if p]
+        return [Path(p) for p in env.split(os.pathsep) if p]
     base = Path.home() / ".local" / "share" / "opencode"
     dbs = []
     global_db = base / "opencode.db"

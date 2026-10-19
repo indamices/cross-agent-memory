@@ -1,6 +1,6 @@
 """Silent snapshot archival script for memory-service.
 
-Called by Windows scheduled task. Runs POST /api/archive-snapshots,
+Run from cron / a scheduler. Runs POST /api/archive-snapshots,
 logs result to archive_cron.log. Completely silent.
 """
 

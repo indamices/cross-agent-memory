@@ -133,9 +133,11 @@ back (`_promote_cold_to_hot`) with a promotion ledger for auditability.
 ## Security model
 
 - Binds to `127.0.0.1` by default.
-- Optional bearer-token auth for all endpoints (`security.enabled` +
-  `SECURITY.api_token` in `config.py`, read/write granularity:
-  `read_requires_token`).
+- Optional bearer-token auth via env: `MEMSVC_TOKEN` protects write
+  endpoints; `MEMSVC_READ_REQUIRES_TOKEN=1` also protects reads.
+- `POST /api/restore` additionally validates the backup name against the
+  `YYYY-MM-DD_HHMMSS` format and confines it to the backup root (no path
+  traversal).
 - No telemetry, no external calls except the local Ollama endpoint. The
   embedder explicitly bypasses HTTP proxies so local calls can never leak
   through a system proxy.

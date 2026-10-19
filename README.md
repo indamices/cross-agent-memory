@@ -93,6 +93,8 @@ Design notes and the full retrieval pipeline are documented in
 
 ### 0. Prerequisites
 
+- **macOS or Linux** (Windows is not supported yet — connectors use POSIX
+  file locks)
 - Python **3.10+**
 - [Ollama](https://ollama.com) running locally (for embeddings)
 
@@ -265,6 +267,7 @@ Everything works with defaults; tune via environment variables when needed:
 | `MEMSVC_BIT_RECALL` | `on` | 1-bit coarse recall prefilter (`off` to disable) |
 | `MEMSVC_MAX_CONCURRENCY` | `8` | HTTP worker cap (503 fast-fail beyond) |
 | `MEMSVC_STALL_WATCHDOG` | `on` | Dump stacks when a search stalls |
+| `MEMSVC_TOKEN` | *(unset)* | Set to require `Authorization: Bearer <token>` on writes |
 | `MEMSVC_SLOW_THRESHOLD_MS` | `8000` | Slow-query threshold for health |
 | `MEMORY_MISS_LEDGER` | *(disabled)* | JSONL of zero/low-quality results (write-back candidates) |
 | `MEMORY_HITS_LEDGER` | *(disabled)* | JSONL sampling of top hits per query |

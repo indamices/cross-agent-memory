@@ -6,10 +6,13 @@ old snapshot files to compressed zip archives.
 
 import logging
 import os
+import re
 import shutil
+import sqlite3
 import zipfile
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import quote
 
 from config import BACKUP, SQLITE_DB, SERVICE_DIR
 
@@ -40,18 +43,36 @@ def backup_sqlite() -> dict:
     backup_path = _BACKUP_ROOT / timestamp
     backup_path.mkdir(parents=True, exist_ok=True)
 
+    target = backup_path / "memory.db"
     try:
-        shutil.copy2(str(SQLITE_DB), str(backup_path / "memory.db"))
-        size_bytes = (backup_path / "memory.db").stat().st_size
+        # Use the SQLite backup API for a consistent snapshot — a plain file
+        # copy can miss committed transactions that still live in the -wal
+        # file while WAL mode is active.
+        src = sqlite3.connect(f"file:{quote(str(SQLITE_DB))}?mode=ro", uri=True,
+                              timeout=30)
+        try:
+            dst = sqlite3.connect(str(target))
+            try:
+                with dst:
+                    src.backup(dst)
+            finally:
+                dst.close()
+        finally:
+            src.close()
+        size_bytes = target.stat().st_size
         size_mb = round(size_bytes / (1024**2), 1)
 
         logger.info(f"SQLite backup created: {backup_path} ({size_mb} MB)")
 
         cleanup_old_backups()
 
+        try:
+            rel_dir = str(backup_path.relative_to(SERVICE_DIR))
+        except ValueError:
+            rel_dir = str(backup_path)  # custom MEMSVC_BACKUP_DIR outside SERVICE_DIR
         return {
             "status": "ok",
-            "backup_dir": str(backup_path.relative_to(SERVICE_DIR)),
+            "backup_dir": rel_dir,
             "backup_name": timestamp,
             "files": 1,
             "size_mb": size_mb,
@@ -131,8 +152,15 @@ def cleanup_old_backups() -> int:
 # ---------------------------------------------------------------------------
 
 
+_BACKUP_NAME_RE = re.compile(r"^\d{4}-\d{2}-\d{2}_\d{6}$")
+
+
 def restore_sqlite(backup_name: str) -> dict:
     """Restore SQLite database from a named backup.
+
+    ``backup_name`` must be a backup directory name produced by
+    :func:`backup_sqlite` (``YYYY-MM-DD_HHMMSS``). Anything else — including
+    path separators or ``..`` — is rejected before touching the filesystem.
 
     Args:
         backup_name: Backup directory name (e.g. ``2026-03-29_153000``).
@@ -140,7 +168,14 @@ def restore_sqlite(backup_name: str) -> dict:
     Returns:
         Dict with ``status`` and details. On failure, includes ``error``.
     """
+    if not isinstance(backup_name, str) or not _BACKUP_NAME_RE.fullmatch(backup_name):
+        return {
+            "status": "error",
+            "error": f"Invalid backup name (expected YYYY-MM-DD_HHMMSS): {backup_name!r}",
+        }
     backup_path = _BACKUP_ROOT / backup_name
+    if backup_path.resolve().parent != _BACKUP_ROOT.resolve():
+        return {"status": "error", "error": "Invalid backup path"}
 
     if not backup_path.is_dir():
         return {"status": "error", "error": f"Backup not found: {backup_name}"}
@@ -153,7 +188,23 @@ def restore_sqlite(backup_name: str) -> dict:
         }
 
     try:
-        shutil.copy2(str(backup_db), str(SQLITE_DB))
+        # Restore THROUGH SQLite (the backup API) instead of file surgery.
+        # Unlinking -wal/-shm and copying files behind SQLite's back is both
+        # unsafe (a connection that has OS state from earlier in this process
+        # yields "disk I/O error" on the next open) and incorrect (a stale
+        # -wal resurrects pre-restore writes). The backup API is consistent,
+        # atomic, and needs no file deletion; then checkpoint to trim the WAL.
+        src = sqlite3.connect(f"file:{quote(str(backup_db))}?mode=ro", uri=True)
+        try:
+            dst = sqlite3.connect(str(SQLITE_DB))
+            try:
+                with dst:
+                    src.backup(dst)
+                dst.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            finally:
+                dst.close()
+        finally:
+            src.close()
 
         logger.info(f"Restored SQLite from backup: {backup_name}")
         return {

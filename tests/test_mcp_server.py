@@ -112,7 +112,7 @@ class TestMcpServer(unittest.TestCase):
         self.assertIn("demo", stats_text)
         self.assertIn("49", stats_text)  # 42 + 7
 
-    def test_unknown_tool_is_reported_in_band(self):
+    def test_unknown_tool_is_invalid_params(self):
         out = self._run_session([
             {"jsonrpc": "2.0", "id": 1, "method": "initialize",
              "params": {"protocolVersion": "2025-06-18"}},
@@ -120,7 +120,18 @@ class TestMcpServer(unittest.TestCase):
              "params": {"name": "nope", "arguments": {}}},
         ])
         by_id = {m.get("id"): m for m in out if "id" in m}
-        self.assertTrue(by_id[9]["result"]["isError"])
+        self.assertEqual(by_id[9]["error"]["code"], -32602)
+
+    def test_notifications_get_no_reply(self):
+        out = self._run_session([
+            {"jsonrpc": "2.0", "id": 1, "method": "initialize",
+             "params": {"protocolVersion": "2025-06-18"}},
+            {"jsonrpc": "2.0", "method": "notifications/initialized"},
+            {"jsonrpc": "2.0", "method": "notifications/cancelled",
+             "params": {"requestId": 1}},
+        ])
+        self.assertEqual(len(out), 1, f"only the initialize reply is allowed, got: {out}")
+        self.assertIsNone(out[0].get("error"))
 
 
 if __name__ == "__main__":
