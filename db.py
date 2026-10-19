@@ -438,6 +438,9 @@ def _ensure_base_schema(conn: sqlite3.Connection) -> None:
 
 
 def _get_conn() -> sqlite3.Connection:
+    # Fresh-install guard: a custom MEMSVC_DB may point into a not-yet-created
+    # data dir; sqlite will not create parent directories itself.
+    Path(SQLITE_DB).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(SQLITE_DB), check_same_thread=False)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA busy_timeout=5000")

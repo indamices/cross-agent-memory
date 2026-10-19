@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cross-agent-memory-service"
+version = "0.1.0"
+description = "Persistent local semantic memory for AI coding assistants"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = ["numpy>=1.24,<3", "PyYAML>=6,<7", "watchdog>=3,<7", "sqlite-vec>=0.1.6,<0.2"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+local = ["sentence-transformers>=3,<6"]
+
+[project.scripts]
+memory-service = "server:main"
+memory-service-init = "schema:initialize"
+
+[tool.setuptools]
+py-modules = ["server", "config", "db", "schema", "embedder", "indexer", "chunking", "monitor", "backup", "pilot_config"]
+packages = ["scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
