@@ -257,7 +257,7 @@ def test_symlink_watches_resolved_real_parent_and_accepts_real_target(tmp_path, 
     rec = DispatchRecorder()
     monkeypatch.setattr(handler, "_dispatch", rec)
     handler.on_modified(FileModifiedEvent(str(real_target)))
-    assert rec.count_of(real_target) == 1, "真实目标修改必须按 realpath 交付"
+    assert rec.count_of(real_target) == 1, "真实目标事件必须匹配归一化目标（source身份另测）"
 
 
 def test_missing_target_watches_existing_parent_for_future_creation(tmp_path, monkeypatch):
@@ -321,11 +321,6 @@ def test_e2e_atomic_replace_delivers_target(tmp_path, monkeypatch):
     finally:
         obs.stop()
         obs.join(timeout=5)
-
-
-# 追加到 test_watch_files_feedback_1023.py（现有 11 个测试保留）
-
-import os
 
 
 def test_symlink_source_identity_keeps_config_path(tmp_path, monkeypatch):
@@ -395,3 +390,82 @@ def test_symlink_source_identity_keeps_config_path(tmp_path, monkeypatch):
     assert os.path.realpath(str(cfg_rule)) not in delivered or delivered == [
         str(cfg_rule)
     ], "不得以 realpath 计数替代配置路径身份"
+
+
+# --- Independent test supplement (GLM-5.3, test author only; no implementation inspected) ---
+
+def test_start_watching_empty_watch_config_raises_and_never_schedules(monkeypatch, tmp_path):
+    import pytest
+
+    started = {"ok": False}
+    calls = []
+
+    class StubObserver:
+        def __init__(self, *args, **kwargs):
+            calls.append(("init", args, kwargs))
+
+        def schedule(self, *args, **kwargs):
+            calls.append(("schedule", args, kwargs))
+
+        def start(self):
+            started["ok"] = True
+            calls.append(("start",))
+
+        def stop(self):
+            calls.append(("stop",))
+
+    monkeypatch.setattr(indexer, "Observer", StubObserver)
+    project = make_project("empty_watch_config", tmp_path)
+
+    with pytest.raises(ValueError):
+        indexer.start_watching(project)
+
+    assert not any(kind in ("schedule", "start") for kind, *_ in calls), (
+        "空 watch 配置不应产生任何 schedule/start 调用"
+    )
+    assert started["ok"] is False
+
+
+def test_start_watching_all_targets_missing_raises_and_never_schedules(monkeypatch, tmp_path):
+    import pytest
+
+    started = {"ok": False}
+    calls = []
+
+    class StubObserver:
+        def __init__(self, *args, **kwargs):
+            calls.append(("init", args, kwargs))
+
+        def schedule(self, *args, **kwargs):
+            calls.append(("schedule", args, kwargs))
+
+        def start(self):
+            started["ok"] = True
+            calls.append(("start",))
+
+        def stop(self):
+            calls.append(("stop",))
+
+    monkeypatch.setattr(indexer, "Observer", StubObserver)
+
+    missing_dir_a = tmp_path / "no_such_dir_a"
+    missing_dir_b = tmp_path / "no_such_dir_b"
+    missing_parent_file = tmp_path / "no_such_parent" / "watched.txt"
+    assert not missing_dir_a.exists()
+    assert not missing_dir_b.exists()
+    assert not missing_parent_file.parent.exists()
+
+    project = make_project(
+        "all_targets_missing",
+        tmp_path,
+        watch_dirs=(missing_dir_a, missing_dir_b),
+        watch_files=(missing_parent_file,),
+    )
+
+    with pytest.raises(ValueError):
+        indexer.start_watching(project)
+
+    assert not any(kind in ("schedule", "start") for kind, *_ in calls), (
+        "全部目标缺失时不应产生任何 schedule/start 调用"
+    )
+    assert started["ok"] is False

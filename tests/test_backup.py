@@ -44,14 +44,35 @@ os.environ["MEMORY_MISS_LEDGER"] = os.path.join(_TMP, "miss.jsonl")
 os.environ["MEMORY_HITS_LEDGER"] = os.path.join(_TMP, "hits.jsonl")
 os.environ["MEMIDX_METRIC_LOG"] = os.path.join(_TMP, "index.jsonl")
 
-import backup
+import os
+os.environ["MEMSVC_HASH_CACHE"] = "0"
+import config
 import db
+import backup
+import server
+import indexer
+from pathlib import Path
 
-# Hard isolation proof: the modules must have bound to the scratch dir.
-assert str(db.SQLITE_DB).startswith(_TMP), f"child bound to wrong DB: {db.SQLITE_DB}"
-assert str(backup.get_api_snapshot_dir()) == os.path.join(_TMP, "api_snapshots"), (
-    f"child bound to wrong snapshot dir: {backup.get_api_snapshot_dir()}"
-)
+root = Path(_TMP).resolve()
+
+path_bindings = {
+    "config.DATA_DIR": (config.DATA_DIR, root),
+    "config.SQLITE_DB": (config.SQLITE_DB, root / "memory.db"),
+    "db.SQLITE_DB": (db.SQLITE_DB, root / "memory.db"),
+    "config.PROJECTS_DIR": (config.PROJECTS_DIR, root / "projects"),
+    "db.COLD_DB_PATH": (db.COLD_DB_PATH, root / "cold.db"),
+    "backup._BACKUP_ROOT": (backup._BACKUP_ROOT, root / "backups"),
+    "backup.get_api_snapshot_dir()": (backup.get_api_snapshot_dir(), root / "api_snapshots"),
+    "server.MEMORY_MISS_LEDGER": (server.MEMORY_MISS_LEDGER, root / "miss.jsonl"),
+    "server.MEMORY_HITS_LEDGER": (server.MEMORY_HITS_LEDGER, root / "hits.jsonl"),
+    "indexer._MEMIDX_METRIC_LOG": (indexer._MEMIDX_METRIC_LOG, root / "index.jsonl"),
+}
+
+for label, (actual, expected) in path_bindings.items():
+    actual_r = Path(actual).resolve()
+    expected_r = Path(expected).resolve()
+    assert actual_r == expected_r, f"{label}: {actual_r} != {expected_r}"
+    assert actual_r.is_relative_to(root), f"{label}: {actual_r} not under {root}"
 
 DIM = 1024
 
