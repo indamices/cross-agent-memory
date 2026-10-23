@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 
 from watchdog.observers import Observer
 
-from watchdog.events import FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent
+from watchdog.events import FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent, FileMovedEvent
 
 from config import ProjectConfig, PROJECTS_DIR, _env_num, DEFAULT_EXCLUDE
 
@@ -1083,6 +1083,17 @@ class _WatchHandler(FileSystemEventHandler):
 
     def __init__(self, project: ProjectConfig):
         self.project = project
+        # realpath is only an OS-watch/matching key. Keep index_project's configured
+        # path as the source identity, including when the configured path is a link.
+        self._file_sources = {}
+        for filename in project.watch_files:
+            configured = Path(os.path.abspath(Path(project.root) / filename))
+            self._file_sources[configured.resolve()] = configured
+        self._dir_sources = []
+        for dirname in project.watch_dirs:
+            configured = Path(os.path.abspath(Path(project.root) / dirname))
+            self._dir_sources.append((configured.resolve(), configured))
+        self._dir_sources.sort(key=lambda pair: len(pair[0].parts), reverse=True)
         self._db_lock = threading.Lock()
         self._db_pending: dict = {}          # file_path -> ProjectConfig
         self._db_timer = None
@@ -1135,17 +1146,37 @@ class _WatchHandler(FileSystemEventHandler):
             else:
                 threading.Thread(target=index_file, args=(file_path, self.project), daemon=True).start()
 
+    def _source_for_event(self, filename: str) -> str | None:
+        real = Path(filename).resolve()
+        if real in self._file_sources:
+            return str(self._file_sources[real])
+        for real_dir, configured_dir in self._dir_sources:
+            if real.is_relative_to(real_dir):
+                return str(configured_dir / real.relative_to(real_dir))
+        return None
+
+    def _dispatch_event(self, filename: str):
+        source = self._source_for_event(filename)
+        if source is not None:
+            self._dispatch(source)
+
     def on_modified(self, event):
         if isinstance(event, FileModifiedEvent) and event.src_path:
-            self._dispatch(event.src_path)
+            self._dispatch_event(event.src_path)
 
     def on_created(self, event):
         if isinstance(event, FileCreatedEvent) and event.src_path:
-            self._dispatch(event.src_path)
+            self._dispatch_event(event.src_path)
+
+    def on_moved(self, event):
+        # Editors often save by replacing the file with a renamed temporary file.
+        # Index its destination, never the sibling temporary file.
+        if isinstance(event, FileMovedEvent) and event.dest_path:
+            self._dispatch_event(event.dest_path)
 
 
 def start_watching(project: ProjectConfig):
-    """Start a file watcher for the project's watch directories.
+    """Watch configured directories and the parents of explicitly selected files.
 
     Returns:
         A watchdog Observer instance (call ``observer.stop()`` to stop).
@@ -1153,13 +1184,23 @@ def start_watching(project: ProjectConfig):
     observer = Observer()
     handler = _WatchHandler(project)
 
-    for d in project.watch_dirs:
-        watch_path = Path(project.root) / d
-        if watch_path.is_dir():
-            observer.schedule(handler, str(watch_path), recursive=True)
+    recursive_dirs = {real for real, _ in handler._dir_sources if real.is_dir()}
+    watches = {dirname: True for dirname in recursive_dirs}
+    for real in handler._file_sources:
+        parent = real.parent
+        if not parent.is_dir():
+            logger.warning("watch_files parent does not exist: %s", parent)
+            continue
+        if not any(parent.is_relative_to(dirname) for dirname in recursive_dirs):
+            watches.setdefault(parent, False)
+    if not watches:
+        raise ValueError(f"No existing watch directories or file parents for {project.name}")
+    for watch_path, recursive in sorted(watches.items()):
+        observer.schedule(handler, str(watch_path), recursive=recursive)
 
     observer.start()
-    logger.info(f"Watching project '{project.name}': {project.watch_dirs}")
+    logger.info("Watching project '%s': directories=%s files=%s", project.name,
+                project.watch_dirs, project.watch_files)
     return observer
 
 
