@@ -34,15 +34,24 @@ sys.path.insert(0, os.environ["CAM_REPO"])
 # before importing db/backup, otherwise the child would operate on the repo's
 # own database (hard-learned via review round 2).
 _TMP = tempfile.mkdtemp(prefix="cam-test-backup-")
+os.environ["MEMSVC_DATA_DIR"] = _TMP
 os.environ["MEMSVC_DB"] = os.path.join(_TMP, "memory.db")
+os.environ["MEMSVC_COLD_DB"] = os.path.join(_TMP, "cold.db")
 os.environ["MEMSVC_BACKUP_DIR"] = os.path.join(_TMP, "backups")
+os.environ["MEMSVC_SNAPSHOT_DIR"] = os.path.join(_TMP, "api_snapshots")
+os.environ["MEMSVC_PROJECTS_DIR"] = os.path.join(_TMP, "projects")
+os.environ["MEMORY_MISS_LEDGER"] = os.path.join(_TMP, "miss.jsonl")
+os.environ["MEMORY_HITS_LEDGER"] = os.path.join(_TMP, "hits.jsonl")
+os.environ["MEMIDX_METRIC_LOG"] = os.path.join(_TMP, "index.jsonl")
 
 import backup
 import db
 
 # Hard isolation proof: the modules must have bound to the scratch dir.
 assert str(db.SQLITE_DB).startswith(_TMP), f"child bound to wrong DB: {db.SQLITE_DB}"
-assert str(backup.get_api_snapshot_dir()).startswith(str(Path(os.environ["CAM_REPO"])))
+assert str(backup.get_api_snapshot_dir()) == os.path.join(_TMP, "api_snapshots"), (
+    f"child bound to wrong snapshot dir: {backup.get_api_snapshot_dir()}"
+)
 
 DIM = 1024
 
