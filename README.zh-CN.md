@@ -16,6 +16,10 @@
 [English](README.md) | **中文**
 
 <p align="center">
+  🎬 <a href="docs/assets/demo-story-zh.mp4"><b>概念演示（2 分钟，中文解说）</b></a> —— 一个列名事故，如何变成一套会自我积累的规矩
+</p>
+
+<p align="center">
   <img src="docs/assets/demo.gif" alt="终端演示：安装、验证、写入与检索" width="860">
 </p>
 <p align="center"><i>真实运行：安装 → 验证 → 写入 → 检索，无摆拍。</i></p>

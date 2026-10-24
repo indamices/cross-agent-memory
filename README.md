@@ -16,6 +16,10 @@
 **English** | [中文](README.zh-CN.md)
 
 <p align="center">
+  🎬 <a href="docs/assets/demo-story-zh.mp4"><b>Concept demo (2 min, Mandarin narration)</b></a>
+</p>
+
+<p align="center">
   <img src="docs/assets/demo.gif" alt="Terminal demo: install, verify, store and search memory" width="860">
 </p>
 <p align="center"><i>Real run: install → verify → store → search. No mock-ups.</i></p>
