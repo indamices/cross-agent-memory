@@ -15,19 +15,16 @@
 
 [English](README.md) | **中文**
 
-<!-- Gitee: 直接内嵌播放; GitHub: 自动降级为下方链接 -->
-<video src="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"
-       controls autoplay muted loop playsinline width="860"
-       poster="docs/assets/demo.gif"></video>
-
+<!-- Gitee README 渲染器的 XSS 白名单不含 video/iframe/object（2026-10 实测 md_preview.js defaultWhiteList），
+     故内嵌播放器不可用；此处用封面图 + 直链 mp4，点击即在浏览器原生播放器中播放。 -->
 <p align="center">
-  🎬 <a href="docs/assets/demo-story-zh.mp4"><b>概念演示（2 分钟，中文解说）</b></a> —— 一个列名事故，如何变成一套会自我积累的规矩
+  🎬 <a href="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"><b>▶ 播放完整演示（2 分钟，中文解说）</b></a> —— 一个列名事故，如何变成一套会自我积累的规矩
 </p>
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="终端演示：安装、验证、写入与检索" width="860">
+  <a href="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"><img src="docs/assets/demo.gif" alt="终端演示：安装、验证、写入与检索 —— 点击播放完整视频" width="860"></a>
 </p>
-<p align="center"><i>真实运行：安装 → 验证 → 写入 → 检索，无摆拍。</i></p>
+<p align="center"><i>真实运行：安装 → 验证 → 写入 → 检索，无摆拍。点击封面即播放 2 分钟完整解说。</i></p>
 
 ---
 

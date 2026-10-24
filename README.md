@@ -15,18 +15,16 @@
 
 **English** | [中文](README.zh-CN.md)
 
-<video src="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"
-       controls autoplay muted loop playsinline width="860"
-       poster="docs/assets/demo.gif"></video>
-
+<!-- Gitee strips <video>/<iframe> in README (XSS allow-list has neither; verified 2026-10),
+     so this uses a poster + direct mp4 link; clicking plays in the browser's native player. -->
 <p align="center">
-  🎬 <a href="docs/assets/demo-story-zh.mp4"><b>Concept demo (2 min, Mandarin narration)</b></a>
+  🎬 <a href="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"><b>▶ Play the full demo (2 min, Mandarin narration)</b></a>
 </p>
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="Terminal demo: install, verify, store and search memory" width="860">
+  <a href="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"><img src="docs/assets/demo.gif" alt="Terminal demo: install, verify, store and search memory — click to play the full video" width="860"></a>
 </p>
-<p align="center"><i>Real run: install → verify → store → search. No mock-ups.</i></p>
+<p align="center"><i>Real run: install → verify → store → search. No mock-ups. Click the poster to play the 2-minute narrated walkthrough.</i></p>
 
 ---
 
