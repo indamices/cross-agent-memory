@@ -102,11 +102,12 @@ def _init_project(proj):
     global _indexing_count
     if not _validate_project(proj):
         return
+    # Balance every validated initialization, including watcher startup errors.
+    with _indexing_lock:
+        _indexing_count += 1
     try:
         _observers.append(start_watching(proj))
         _initialized_projects.add(proj.name)
-        with _indexing_lock:
-            _indexing_count += 1
         result = index_project(proj, force=False, cleanup=True)  # T-MEMSVC-WALK-SPEEDUP: walk 路径清死缓存 (flash 条件3)
         logger.info(
             f"Initial index {proj.name}: indexed={result['indexed']}, "

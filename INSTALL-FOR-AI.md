@@ -35,7 +35,15 @@ and enter it; never replace an existing checkout. No repository URL is assumed.
    incomplete. `--offline` only checks storage and cannot certify model readiness.
 7. **Connect:** add examples/client-instructions.md to the user's chosen
    assistant's project instruction file, preserving existing content. Register
-   only a user-selected project (docs/API.md), with narrow watch targets.
+   only a user-selected project (docs/API.md), with narrow watch targets. Create
+   the chosen watch directories before starting. If no existing watch directory
+   or watch-file parent is available, that project fails watcher startup with
+   an explicit error; missing directories are not watched for future creation. Choose
+   the file or MCP capture path in examples/client-instructions.md. MCP writes require the client
+   to expose the configured memory_write tool; file updates use the default
+   one-hour batch window. Check the write result for errors and indexed status;
+   a truncated or missing status is unverified until project-scoped readback
+   succeeds. Confirm indexing and retrieval before reporting reuse.
 8. **Report:** exact paths, Python, commands, health fields, example results,
    and client instruction destination. State unverified steps explicitly.
 
