@@ -15,6 +15,11 @@
 
 [English](README.md) | **中文**
 
+<!-- Gitee: 直接内嵌播放; GitHub: 自动降级为下方链接 -->
+<video src="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"
+       controls autoplay muted loop playsinline width="860"
+       poster="docs/assets/demo.gif"></video>
+
 <p align="center">
   🎬 <a href="docs/assets/demo-story-zh.mp4"><b>概念演示（2 分钟，中文解说）</b></a> —— 一个列名事故，如何变成一套会自我积累的规矩
 </p>

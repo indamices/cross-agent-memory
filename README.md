@@ -15,6 +15,10 @@
 
 **English** | [中文](README.zh-CN.md)
 
+<video src="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"
+       controls autoplay muted loop playsinline width="860"
+       poster="docs/assets/demo.gif"></video>
+
 <p align="center">
   🎬 <a href="docs/assets/demo-story-zh.mp4"><b>Concept demo (2 min, Mandarin narration)</b></a>
 </p>
