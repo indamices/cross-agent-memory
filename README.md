@@ -21,6 +21,10 @@
   🎬 <a href="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"><b>▶ Play the full demo (2 min, Mandarin narration)</b></a>
 </p>
 
+Uploading cross-agent-memory-v11-minimal-reedit-r3.mp4…
+
+
+
 <p align="center">
   <a href="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"><img src="docs/assets/demo.gif" alt="Terminal demo: install, verify, store and search memory — click to play the full video" width="860"></a>
 </p>
