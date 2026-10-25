@@ -1,0 +1,12 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.indamices/cross-agent-memory",
+  "title": "Cross-Agent Memory",
+  "description": "Local-first shared memory for AI coding agents: one searchable store, served over MCP. MIT.",
+  "repository": {
+    "url": "https://github.com/indamices/cross-agent-memory",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/indamices/cross-agent-memory#readme",
+  "version": "1.0.0"
+}
