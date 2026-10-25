@@ -21,7 +21,7 @@
   🎬 <a href="https://gitee.com/indamices/cross-agent-memory/raw/main/docs/assets/demo-story-zh.mp4"><b>▶ Play the full demo (2 min, Mandarin narration)</b></a>
 </p>
 
-![Concept demo video](https://github.com/user-attachments/assets/a8d5d77c-98bc-42f7-9c58-7b48295875fe)
+https://github.com/user-attachments/assets/a8d5d77c-98bc-42f7-9c58-7b48295875fe
 
 
 
